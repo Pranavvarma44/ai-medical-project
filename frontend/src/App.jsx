@@ -5,6 +5,7 @@ import Welcome from "./pages/Welcome";
 import Scan from "./pages/Scan";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Result from "./pages/Result";
+import History from "./pages/History";
 
 export default function App() {
   return (
@@ -14,6 +15,8 @@ export default function App() {
       <Route path="/" element={<Welcome />} />
       <Route path="/scan" element={<ProtectedRoute><Scan/></ProtectedRoute>}/>
       <Route path="/result/:id" element={<Result />} />
+      <Route path="/history" element={<History />} />
+
       
     </Routes>
   );

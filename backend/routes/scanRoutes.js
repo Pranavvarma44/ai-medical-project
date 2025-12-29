@@ -3,10 +3,41 @@ import axios from "axios";
 import multer from "multer";
 import protect from "../middleware/authMiddleware.js";
 import Scan from "../models/Scan.js";
+import path from "path";
 
 const router = express.Router();
 
-const upload = multer({ dest: "uploads/" });
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}${ext}`);
+  },
+});
+
+const upload = multer({ storage });
+
+router.get("/my",protect,async(req,res)=>{
+  try{
+    const scans=await Scan.find({user:req.userId}).sort({createdAt:-1});
+    res.json({scans});
+  }catch(error){
+    res.status(500).json({ message: "Failed to fetch scans" });
+  }
+})
+
+router.get("/:id",protect,async(req,res)=>{
+  try{
+    const scan=await Scan.findById(req.params.id);
+    if(!scan){
+      return res.status(404).json({ message: "Scan not found" });
+    }
+    res.json(scan);
+  }catch(err){
+    res.status(500).json({message:"server error"});
+
+  }
+});
 
 router.post(
   "/predict",
