@@ -54,7 +54,7 @@ export default function Scan() {
       <div className="min-h-screen bg-gray-100 px-4 py-12 flex flex-col items-center">
 
         
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex items-center gap-2 mb-8 pt-24">
           <Activity className="text-blue-600" size={32} />
           <h1 className="text-3xl font-bold text-gray-800">
             Chest X-Ray Scan
