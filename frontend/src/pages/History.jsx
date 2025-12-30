@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity } from "lucide-react";
-import { getMyScans } from "../api/axios";
+import { deleteScan,getMyScans } from "../api/axios";
 import Navbar from "../components/Navbar";
 
 export default function History() {
@@ -18,12 +18,11 @@ export default function History() {
         const res = await getMyScans();
         console.log("HISTORY RESPONSE:", res.data);
 
-        // ✅ Defensive: ensure scans is always an array
         setScans(res?.data?.scans || []);
       } catch (err) {
         console.error(err);
         alert("Failed to load history");
-        setScans([]); // prevent crash
+        setScans([]);
       } finally {
         setLoading(false);
       }
@@ -31,6 +30,20 @@ export default function History() {
 
     fetchHistory();
   }, []);
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Delete this scan permanently?");
+    if (!confirm) return;
+  
+    try {
+      await deleteScan(id);
+  
+      // 🔥 Instantly update UI (no reload)
+      setScans((prev) => prev.filter((scan) => scan._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete scan");
+    }
+  };
 
   if (loading) {
     return (
@@ -48,13 +61,11 @@ export default function History() {
       <Navbar />
 
       <div className="min-h-screen bg-gray-100 p-10 pt-24">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Activity size={36} className="text-blue-600" />
           <h1 className="text-3xl font-bold">Scan History</h1>
         </div>
 
-        {/* Empty state */}
         {!scans || scans.length === 0 ? (
           <p className="text-gray-600">No scans yet.</p>
         ) : (
@@ -83,13 +94,21 @@ export default function History() {
                     <p className="text-xs text-gray-400 mt-2">
                       {new Date(scan.createdAt).toLocaleString()}
                     </p>
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => navigate(`/result/${scan._id}`)}
+                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                      >
+                        View
+                      </button>
 
-                    <button
-                      onClick={() => navigate(`/result/${scan._id}`)}
-                      className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
-                      View Result
-                    </button>
+                      <button
+                        onClick={() => handleDelete(scan._id)}
+                        className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

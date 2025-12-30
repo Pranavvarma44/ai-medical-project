@@ -21,4 +21,7 @@ export const loginUser = (data) =>
 export const getMyScans = () =>
   API.get("/scans/my");
 
+export const deleteScan=(id)=>
+  API.delete(`/scans/${id}`);
+
 export default API;
