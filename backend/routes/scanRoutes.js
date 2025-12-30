@@ -1,44 +1,23 @@
 import express from "express";
 import axios from "axios";
 import multer from "multer";
+import fs from "fs";
+import FormData from "form-data";
 import protect from "../middleware/authMiddleware.js";
 import Scan from "../models/Scan.js";
-import path from "path";
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
+/* =========================
+   MULTER CONFIG
+========================= */
+const upload = multer({
+  dest: "uploads/",
 });
 
-const upload = multer({ storage });
-
-router.get("/my",protect,async(req,res)=>{
-  try{
-    const scans=await Scan.find({user:req.userId}).sort({createdAt:-1});
-    res.json({scans});
-  }catch(error){
-    res.status(500).json({ message: "Failed to fetch scans" });
-  }
-})
-
-router.get("/:id",protect,async(req,res)=>{
-  try{
-    const scan=await Scan.findById(req.params.id);
-    if(!scan){
-      return res.status(404).json({ message: "Scan not found" });
-    }
-    res.json(scan);
-  }catch(err){
-    res.status(500).json({message:"server error"});
-
-  }
-});
-
+/* =========================
+   POST /api/scans/predict
+========================= */
 router.post(
   "/predict",
   protect,
@@ -49,45 +28,107 @@ router.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      // 🔁 Call FastAPI
+      /* =========================
+         SEND IMAGE FILE TO COLAB
+      ========================= */
+      const formData = new FormData();
+
+      // ✅ MUST BE "image" (matches FastAPI)
+      formData.append(
+        "image",
+        fs.createReadStream(req.file.path)
+      );
+
       const pythonResponse = await axios.post(
-        "http://localhost:8000/predict",
+        "https://precedential-lavera-unconformable.ngrok-free.dev/predict",
+        formData,
         {
-          image_path: `${process.cwd()}/${req.file.path}`
+          headers: {
+            ...formData.getHeaders(),
+          },
+          timeout: 30000,
         }
       );
-      console.log("PYTHON RESPONSE:", pythonResponse.data);
+
+      console.log("🐍 COLAB RESPONSE:", pythonResponse.data);
 
       const {
         predictedClass,
-        predictions,
         confidence,
+        predictions,
       } = pythonResponse.data;
 
-      // 🧪 Debug (TEMP — REMOVE LATER)
-      console.log("PYTHON RESPONSE:", pythonResponse.data);
-
-      // 💾 Save to DB
+      /* =========================
+         SAVE TO DATABASE
+      ========================= */
       const scan = await Scan.create({
-        user: req.userId,          // ✅ FIXED
-        imageUrl: req.file.path,     // ✅ MATCH SCHEMA
+        user: req.userId,
+        imageUrl: req.file.path,
         predictedClass,
         confidence,
         predictions,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         message: "Prediction successful",
         scan,
       });
     } catch (error) {
-      console.error("FULL ERROR:", error);
-      res.status(500).json({
-        error: "Prediction failed",
-        details: error.message,
+      console.error(
+        "❌ SCAN ERROR:",
+        error.response?.data || error.message
+      );
+
+      return res.status(500).json({
+        message: "Prediction failed",
+        error: error.response?.data || error.message,
       });
     }
   }
 );
+
+/* =========================
+   GET USER SCANS
+========================= */
+router.get("/my", protect, async (req, res) => {
+  try {
+    const scans = await Scan.find({ user: req.userId }).sort({
+      createdAt: -1,
+    });
+
+    res.json({ scans });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch scans" });
+  }
+});
+
+/* =========================
+   GET SINGLE SCAN
+========================= */
+router.get("/:id", protect, async (req, res) => {
+  try {
+    const scan = await Scan.findById(req.params.id);
+
+    if (!scan) {
+      return res.status(404).json({ message: "Scan not found" });
+    }
+
+    res.json(scan);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* =========================
+   DELETE SCAN
+========================= */
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    await Scan.findByIdAndDelete(req.params.id);
+    res.json({ message: "Scan deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete scan" });
+  }
+});
 
 export default router;
