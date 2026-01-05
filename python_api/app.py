@@ -1,9 +1,8 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
 import tensorflow as tf
 import numpy as np
 import cv2
 import os
+from fastapi import FastAPI
 from tensorflow.keras.applications import EfficientNetB3
 from tensorflow.keras import layers, models
 
@@ -13,7 +12,7 @@ IMG_SIZE = (300, 300)
 CLASS_NAMES = ["COVID", "Normal", "Viral Pneumonia"]
 NUM_CLASSES = 3
 
-model = None  # 👈 IMPORTANT
+model = None
 
 
 def load_model():
@@ -21,10 +20,10 @@ def load_model():
     if model is not None:
         return model
 
-    print("🟡 Loading model...")
+    print("🟡 Rebuilding model architecture...")
 
     base_model = EfficientNetB3(
-        weights=None,
+        weights=None,                 # IMPORTANT
         include_top=False,
         input_shape=(300, 300, 3)
     )
@@ -35,52 +34,40 @@ def load_model():
         layers.BatchNormalization(),
         layers.Dense(256, activation="relu"),
         layers.Dropout(0.4),
-        layers.Dense(NUM_CLASSES, activation="softmax")
+        layers.Dense(NUM_CLASSES, activation="softmax"),
     ])
 
+    print("🟡 Loading weights only...")
     model.load_weights("models/xray_classifier_b3_3class1.keras")
 
-    # Warmup
+    # warmup
     model.predict(np.zeros((1, 300, 300, 3)))
 
-    print("✅ Model loaded successfully")
+    print("✅ Model ready")
     return model
 
 
-class PredictRequest(BaseModel):
-    image_path: str
-
-
-@app.get("/")
-def health():
-    return {"status": "API running"}
-
-
 @app.post("/predict")
-def predict(req: PredictRequest):
-    print("🟡 Predict request received")
-
+def predict(image_path: str):
     model = load_model()
 
-    if not os.path.exists(req.image_path):
+    if not os.path.exists(image_path):
         return {"error": "Image not found"}
 
-    img = cv2.imread(req.image_path)
-    if img is None:
-        return {"error": "Invalid image"}
-
+    img = cv2.imread(image_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, IMG_SIZE)
     img = img / 255.0
-    input_tensor = np.expand_dims(img, axis=0)
 
-    preds = model.predict(input_tensor)[0]
+    x = np.expand_dims(img, axis=0)
+
+    preds = model.predict(x)[0]
     idx = int(np.argmax(preds))
 
     return {
         "predictedClass": CLASS_NAMES[idx],
         "confidence": float(preds[idx]),
         "predictions": {
-            CLASS_NAMES[i]: float(preds[i]) for i in range(len(CLASS_NAMES))
-        }
+            CLASS_NAMES[i]: float(preds[i]) for i in range(NUM_CLASSES)
+        },
     }
