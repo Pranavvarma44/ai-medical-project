@@ -6,6 +6,7 @@ import Scan from "./pages/Scan";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Result from "./pages/Result";
 import History from "./pages/History";
+console.log("API URL:", import.meta.env.VITE_API_URL);
 
 export default function App() {
   return (
