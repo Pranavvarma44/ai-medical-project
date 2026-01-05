@@ -8,16 +8,12 @@ import Scan from "../models/Scan.js";
 
 const router = express.Router();
 
-/* =========================
-   MULTER CONFIG
-========================= */
+
 const upload = multer({
   dest: "uploads/",
 });
 
-/* =========================
-   POST /api/scans/predict
-========================= */
+
 router.post(
   "/predict",
   protect,
@@ -28,12 +24,10 @@ router.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      /* =========================
-         SEND IMAGE FILE TO COLAB
-      ========================= */
+      
       const formData = new FormData();
 
-      // ✅ MUST BE "image" (matches FastAPI)
+      
       formData.append(
         "image",
         fs.createReadStream(req.file.path)
@@ -50,7 +44,7 @@ router.post(
         }
       );
 
-      console.log("🐍 COLAB RESPONSE:", pythonResponse.data);
+      console.log("COLAB RESPONSE:", pythonResponse.data);
 
       const {
         predictedClass,
@@ -58,9 +52,7 @@ router.post(
         predictions,
       } = pythonResponse.data;
 
-      /* =========================
-         SAVE TO DATABASE
-      ========================= */
+     
       const scan = await Scan.create({
         user: req.userId,
         imageUrl: req.file.path,
@@ -75,7 +67,6 @@ router.post(
       });
     } catch (error) {
       console.error(
-        "❌ SCAN ERROR:",
         error.response?.data || error.message
       );
 
@@ -87,9 +78,6 @@ router.post(
   }
 );
 
-/* =========================
-   GET USER SCANS
-========================= */
 router.get("/my", protect, async (req, res) => {
   try {
     const scans = await Scan.find({ user: req.userId }).sort({
@@ -102,9 +90,7 @@ router.get("/my", protect, async (req, res) => {
   }
 });
 
-/* =========================
-   GET SINGLE SCAN
-========================= */
+
 router.get("/:id", protect, async (req, res) => {
   try {
     const scan = await Scan.findById(req.params.id);
@@ -119,9 +105,6 @@ router.get("/:id", protect, async (req, res) => {
   }
 });
 
-/* =========================
-   DELETE SCAN
-========================= */
 router.delete("/:id", protect, async (req, res) => {
   try {
     await Scan.findByIdAndDelete(req.params.id);
