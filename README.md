@@ -88,11 +88,11 @@ The model learned meaningful patterns from X-ray images and achieved good perfor
 3. Run the notebook to train the model (or use saved model)  
 4. Start the backend server  
 5. Open the web app and upload an image
-##setup and initialisation
-##clone repository
+## pre installs
+## clone repository
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
-##create venv
+## create env
 python -m venv venv
 windows:venv\Scripts\activate
 mac:source venv/bin/activate
