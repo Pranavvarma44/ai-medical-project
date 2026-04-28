@@ -96,6 +96,13 @@ The model learned meaningful patterns from X-ray images and achieved good perfor
 - python -m venv venv
 - windows:venv\Scripts\activate
 - mac:source venv/bin/activate
+## install libraries
+- pip install tensorflow numpy matplotlib pillow flask
+## dataset
+- Download the COVID-19 Radiography Database from Kaggle
+- Extract and place it inside the project directory
+## model
+- run the notebook or the model directly
 
 ## Note
 This project is for educational purposes and should not be used for actual medical diagnosis.
