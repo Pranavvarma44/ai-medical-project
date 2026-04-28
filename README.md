@@ -87,7 +87,15 @@ The model learned meaningful patterns from X-ray images and achieved good perfor
 2. Install dependencies  
 3. Run the notebook to train the model (or use saved model)  
 4. Start the backend server  
-5. Open the web app and upload an image  
+5. Open the web app and upload an image
+##setup and initialisation
+##clone repository
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+##create venv
+python -m venv venv
+windows:venv\Scripts\activate
+mac:source venv/bin/activate
 
 ## Note
 This project is for educational purposes and should not be used for actual medical diagnosis.
