@@ -90,12 +90,12 @@ The model learned meaningful patterns from X-ray images and achieved good perfor
 5. Open the web app and upload an image
 ## pre installs
 ## clone repository
--git clone https://github.com/your-username/your-repo-name.git
--cd your-repo-name
+- git clone https://github.com/your-username/your-repo-name.git
+- cd your-repo-name
 ## create env
--python -m venv venv
--windows:venv\Scripts\activate
--mac:source venv/bin/activate
+- python -m venv venv
+- windows:venv\Scripts\activate
+- mac:source venv/bin/activate
 
 ## Note
 This project is for educational purposes and should not be used for actual medical diagnosis.
