@@ -90,19 +90,40 @@ The model learned meaningful patterns from X-ray images and achieved good perfor
 5. Open the web app and upload an image
 ## pre installs
 ## clone repository
-- git clone https://github.com/your-username/your-repo-name.git
+- git clone https://github.com/Pranavvarma44/ai-medical-project.git
 - cd your-repo-name
-## create env
-- python -m venv venv
-- windows:venv\Scripts\activate
-- mac:source venv/bin/activate
-## install libraries
+
+## create env (backend - python)
+- python -m venv venv  
+- windows: venv\Scripts\activate  
+- mac: source venv/bin/activate  
+
+## install backend libraries
 - pip install tensorflow numpy matplotlib pillow flask
+
+## install frontend & server dependencies
+- cd client  
+- npm install  
+- cd ../server  
+- npm install  
+
 ## dataset
-- Download the COVID-19 Radiography Database from Kaggle
-- Extract and place it inside the project directory
+- Download the COVID-19 Radiography Database from Kaggle  
+- Extract and place it inside the project directory  
+
 ## model
-- run the notebook or the model directly
+- Run the notebook to train the model OR use the saved model file  
+
+## run backend (ML API)
+- cd server  
+- node server.js  
+
+## run frontend (React app)
+- cd client  
+- npm start  
+
+## open application
+- http://localhost:3000
 
 ## Note
 This project is for educational purposes and should not be used for actual medical diagnosis.
